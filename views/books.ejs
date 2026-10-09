@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llibres</title>
+</head>
+<body>
+    <h1>Lista de libros</h1>
+
+    <% if (books.length === 0) { %>
+        <p>No hi ha llibres.</p>
+    <% } else { %>
+        <ul>
+            <% books.forEach(book => { %>
+                <li>
+                    <%= book.name %> - <%= book.author %> (<%= book.year %>)
+
+                    <a href="/books/<%= book.id %>/edit">Editar</a>
+
+                    <form action="/books/<%= book.id %>?_method=DELETE" method="POST"
+                          style="display:inline">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+</body>
+</html>
