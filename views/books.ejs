@@ -3,28 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css" />
     <title>Llibres</title>
 </head>
 <body>
+    <div class="page">
     <h1>Lista de libros</h1>
 
     <% if (books.length === 0) { %>
         <p>No hi ha llibres.</p>
     <% } else { %>
-        <ul>
+        <ul class="list">
             <% books.forEach(book => { %>
-                <li>
-                    <%= book.name %> - <%= book.author %> (<%= book.year %>)
+                <li class="card">
+                    <div class="info">
+                        <div class="name"><%= book.name %></div>
+                        <div class="detail"><%= book.author %> · <%= book.year %></div>
+                    </div>
 
-                    <a href="/books/<%= book.id %>/edit">Editar</a>
+                    <div class="actions">
+                        <a class="btn btn-small" href="/books/<%= book.id %>/edit">Editar</a>
 
-                    <form action="/books/<%= book.id %>?_method=DELETE" method="POST"
-                          style="display:inline">
-                        <button type="submit">Eliminar</button>
-                    </form>
+                        <!-- onsubmit: confirm() shows the alert; Cancel -> false -> the form is NOT sent -->
+                        <form action="/books/<%= book.id %>?_method=DELETE" method="POST"
+                              onsubmit="return confirm('¿Seguro que quieres eliminar este libro?')">
+                            <button type="submit" class="btn-small">Eliminar</button>
+                        </form>
+                    </div>
                 </li>
             <% }) %>
         </ul>
     <% } %>
+    <a class="back" href="/protected">Volver</a>
+    </div>
 </body>
 </html>

@@ -3,14 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css" />
-    <script src="./js/register.js" defer></script>
-    <title>Document</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script src="/js/register.js" defer></script>
+    <title>Productos</title>
 </head>
 <body>
-    <div class="container">
-        <span>Has iniciado el session!</span>
-        <button id="close-session">Cerrar sessión</button>
+    <div class="page">
+        <h1>Hola <%= user.username %>!</h1>
+        <p style="text-align:center">Lista de productos</p>
+
+        <div class="cards">
+            <a class="card" href="/books"><h2>Books</h2></a>
+            <a class="card" href="/magazines"><h2>Magazines</h2></a>
+        </div>
+
+        <button id="close-session">Cerrar sesión</button>
     </div>
 </body>
 </html>

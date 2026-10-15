@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css" />
+    <title>Edita Revista</title>
+</head>
+<body>
+    <header>
+        <h1>Editar Revista: <%= magazine.name %></h1>
+    </header>
+
+    <main>
+        <form action="/magazines/<%= magazine.id %>?_method=PUT" method="POST">
+            <label for="name">Títol:</label>
+            <input type="text" id="name" name="name" value="<%= magazine.name %>" required>
+
+            <label for="issue">Edició / Edició N°:</label>
+            <input type="number" id="issue" name="issue" value="<%= magazine.issue %>" required>
+
+            <label for="publisher">Editorial:</label>
+            <input type="text" id="publisher" name="publisher" value="<%= magazine.publisher %>" required>
+
+            <label for="category">Categoria:</label>
+            <input type="text" id="category" name="category" value="<%= magazine.category %>" required>
+
+            <label for="publication_date">Data de Publicació:</label>
+            <input type="date" id="publication_date" name="publication_date" value="<%= magazine.publication_date %>" required>
+
+            <button type="submit">Desar Canvis</button>
+        </form>
+        <a href="/magazines">Tornar al llistat</a>
+    </main>
+</body>
+</html>

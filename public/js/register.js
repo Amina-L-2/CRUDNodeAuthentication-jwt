@@ -40,6 +40,8 @@
             const password = $('#register-password').value
             const confirmPassword = $('#register-confirm-password').value
 
+            console.log(JSON.stringify(password), JSON.stringify(confirmPassword))
+            
             if (password != confirmPassword) {
                 alert('Passwords do not match')
                 return

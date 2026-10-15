@@ -5,6 +5,7 @@ import {PORT, SECRET_JWT_KEY} from './config.js'
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import booksRouter from './routes/books.js';
+import magazinesRouter from './routes/magazines.js';
 
 const app = express();
 app.use(express.json());
@@ -12,7 +13,6 @@ app.use(cookieParser())
 app.use(express.static("public")); // Carrega CSS i altres fitxers públics
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
-app.use(booksRouter);
 
 app.set('view engine', 'ejs'); // Motor de plantilles
 app.set('views', './views'); // Ubicació de les plantilles
@@ -31,12 +31,29 @@ app.use((req,res,next) => {
     next() // seguir a la siguiente ruta o middleware.
 })
 
+// Only logged-in users can use the books and magazines CRUD
+// (the routers go AFTER the middleware above, so req.session.user is already loaded)
+app.use(['/books', '/magazines'], (req, res, next) => {
+    if (!req.session.user) return res.status(403).send("Access not authorized")
+    next()
+})
+app.use(booksRouter);
+app.use(magazinesRouter);
+
 app.post('/register', async (req,res)=>{
     //aqui el body es el cuerpo de la petición
     const {username,password}=req.body
     console.log(req.body)
     try{
         const id= await UserRepository.create({username,password});
+        // log the new user in right away, because register.js sends them to /protected
+        const token = jwt.sign({id, username}, SECRET_JWT_KEY, {expiresIn:'1h'})
+        res.cookie('access_token',token,{
+            httpOnly:true,
+            secure: process.env.NODE_ENV==='production',
+            sameSite:'strict',
+            maxAge:1000*60*60
+        })
         res.send({id})
     }catch(error){
         //No es buena idea mandar el error del repositorio
@@ -88,11 +105,9 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/protected',(req,res) => {
-    //const {user} = req.session;
-    //if (!user) return res.status(403).send("Access not authorized")
-    //res.render("home", user)
-    //res.render("home")
-    res.render("protected")
+    const {user} = req.session;
+    if (!user) return res.status(403).send("Access not authorized")
+    res.render("protected", {user})
 
 })
 

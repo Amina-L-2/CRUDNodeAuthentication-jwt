@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css" />
+    <title>Revistes</title>
+</head>
+<body>
+    <div class="page">
+    <h1>Llista de revistes</h1>
+
+    <% if (magazines.length === 0) { %>
+        <p>No hi ha revistes.</p>
+    <% } else { %>
+        <ul class="list">
+            <% magazines.forEach(magazine => { %>
+                <li class="card">
+                    <div class="info">
+                        <div class="name"><%= magazine.name %></div>
+                        <div class="detail">
+                            Núm. <%= magazine.issue %> | <%= magazine.publisher %> |
+                            <%= magazine.category %> | <%= magazine.publication_date %>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <a class="btn btn-small" href="/magazines/<%= magazine.id %>/edit">Editar</a>
+
+                        <form action="/magazines/<%= magazine.id %>?_method=DELETE" method="POST"
+                              onsubmit="return confirm('¿Seguro que quieres eliminar esta revista?')">
+                            <button type="submit" class="btn-small">Eliminar</button>
+                        </form>
+                    </div>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+    <a class="back" href="/protected">Volver</a>
+    </div>
+</body>
+</html>

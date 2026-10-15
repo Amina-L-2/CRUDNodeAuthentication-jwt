@@ -59,8 +59,10 @@ router.put("/books/:id", (req, res) => {
       ...body,
     };
     writeData(data);
+    // A form arrives as POST (method-override turns it into PUT) -> go back to the list.
+    // Postman sends a real PUT -> JSON. Only ONE response is allowed per request.
+    if (req.originalMethod === "POST") return res.redirect("/books");
     res.json({ message: "Book updated successfully" });
-    res.redirect("/books");
 });
 
 
@@ -74,8 +76,8 @@ router.delete("/books/:id", (req, res) => {
     // que li indiqui al segon argument, en aquest cas 1
     data.books.splice(bookIndex, 1);
     writeData(data);
+    if (req.originalMethod === "POST") return res.redirect("/books");
     res.json({ message: "Book deleted successfully" });
-    res.redirect("/books");
 });
 
 export default router;
