@@ -1,0 +1,267 @@
+### =====================================================================
+### Endpoint tests - Sistema complet amb autenticació i CRUD
+### Use with the VS Code "REST Client" extension (or adapt to Postman).
+### Start the server first:  npm run dev   (default port 3001)
+###
+### Auth is cookie-based: POST /login sets an httpOnly "access_token"
+### cookie (1h). REST Client stores that cookie and sends it on the
+### following requests, so run the file top to bottom.
+### Run the "no auth" section BEFORE the login section (or after /logout).
+### =====================================================================
+
+@baseUrl = http://localhost:3001
+@username = apitest
+@password = secret123
+
+
+### ---------------------------------------------------------------------
+### 1. AUTH - no session yet
+### ---------------------------------------------------------------------
+
+### 1.1 Protected page without login -> 403 "Access not authorized"
+GET {{baseUrl}}/protected
+
+### 1.2 Books CRUD without login -> 403 "Access not authorized"
+GET {{baseUrl}}/books
+
+### 1.3 Magazines CRUD without login -> 403
+GET {{baseUrl}}/magazines
+
+### 1.4 Books JSON without login -> 403
+GET {{baseUrl}}/books/1
+
+### 1.5 Create a book without login -> 403 (nothing written to db.json)
+POST {{baseUrl}}/books
+Content-Type: application/json
+
+{
+  "name": "Should not be created",
+  "author": "Nobody",
+  "year": 2000
+}
+
+
+### ---------------------------------------------------------------------
+### 2. AUTH - register / login / logout
+### ---------------------------------------------------------------------
+
+### 2.1 Register a new user -> 200 { "id": "<uuid>" } + access_token cookie
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 2.2 Register with the same username -> 400 "username already exists"
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 2.3 Register with a too-short username -> 400 "Username superior a 3 caracteres"
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "password": "{{password}}"
+}
+
+### 2.4 Register with a too-short password -> 400 "password superior a 5 caracteres"
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "apitest2",
+  "password": "123"
+}
+
+### 2.5 Login with a wrong password -> 401 "password is invalid"
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "wrong-password"
+}
+
+### 2.6 Login with an unknown user -> 401 "username does not exist"
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "nobody_here",
+  "password": "{{password}}"
+}
+
+### 2.7 Login OK -> 200 { user, token } + access_token cookie (1h)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 2.8 Protected page with session -> 200 HTML (protected.ejs)
+GET {{baseUrl}}/protected
+
+### 2.9 Profile / index pages
+GET {{baseUrl}}/
+
+
+### ---------------------------------------------------------------------
+### 3. BOOKS CRUD  (/books) - needs the cookie from 2.7
+### ---------------------------------------------------------------------
+
+### 3.1 GET all books -> HTML page (books.ejs)
+GET {{baseUrl}}/books
+
+### 3.2 GET form to create a book -> HTML (new_book.ejs)
+GET {{baseUrl}}/books/new
+
+### 3.3 GET one book -> 200 JSON
+GET {{baseUrl}}/books/1
+
+### 3.4 GET edit form for a book -> HTML (edit_books.ejs)
+GET {{baseUrl}}/books/1/edit
+
+### 3.5 CREATE a book (JSON) -> 302 redirect to /books
+### The new id is max(existing ids) + 1, so it will be 5 on a fresh db.json.
+POST {{baseUrl}}/books
+Content-Type: application/json
+
+{
+  "name": "Dune",
+  "author": "Frank Herbert",
+  "year": 1965
+}
+
+### 3.6 CREATE a book (HTML form style, urlencoded) -> 302 redirect to /books
+POST {{baseUrl}}/books
+Content-Type: application/x-www-form-urlencoded
+
+name=Neuromancer&author=William+Gibson&year=1984
+
+### 3.7 GET the book created in 3.5
+GET {{baseUrl}}/books/5
+
+### 3.8 UPDATE a book (real PUT, JSON) -> 200 { "message": "Book updated successfully" }
+PUT {{baseUrl}}/books/5
+Content-Type: application/json
+
+{
+  "name": "Dune (Edició revisada)",
+  "year": 1966
+}
+
+### 3.9 UPDATE a book via HTML form (POST + _method=PUT) -> 302 redirect to /books
+POST {{baseUrl}}/books/5?_method=PUT
+Content-Type: application/x-www-form-urlencoded
+
+name=Dune&author=Frank+Herbert&year=1965
+
+### 3.10 UPDATE a book that does not exist -> 404 "Book not found"
+PUT {{baseUrl}}/books/999
+Content-Type: application/json
+
+{
+  "name": "Ghost"
+}
+
+### 3.11 DELETE a book (real DELETE) -> 200 { "message": "Book deleted successfully" }
+DELETE {{baseUrl}}/books/5
+
+### 3.12 DELETE a book via HTML form (POST + _method=DELETE) -> 302 redirect to /books
+POST {{baseUrl}}/books/4?_method=DELETE
+
+### 3.13 DELETE a book that does not exist -> 404 "Book not found"
+DELETE {{baseUrl}}/books/999
+
+### 3.14 GET a book that does not exist
+### NOTE: current code does res.json(undefined) here, so it answers 200 with an
+### empty body instead of 404. Expected behaviour is 404 - worth fixing.
+GET {{baseUrl}}/books/999
+
+
+### ---------------------------------------------------------------------
+### 4. MAGAZINES CRUD  (/magazines) - needs the cookie from 2.7
+### ---------------------------------------------------------------------
+
+### 4.1 GET all magazines -> HTML page (magazines.ejs)
+GET {{baseUrl}}/magazines
+
+### 4.2 GET form to create a magazine -> HTML (new_magazine.ejs)
+GET {{baseUrl}}/magazines/new
+
+### 4.3 GET one magazine -> 200 JSON
+GET {{baseUrl}}/magazines/1
+
+### 4.4 GET one magazine that does not exist -> 404 "Magazine not found"
+GET {{baseUrl}}/magazines/999
+
+### 4.5 GET edit form for a magazine -> HTML (edit_magazines.ejs)
+GET {{baseUrl}}/magazines/1/edit
+
+### 4.6 CREATE a magazine (JSON) -> 302 redirect to /magazines
+### id will be 4 on a fresh db.json.
+POST {{baseUrl}}/magazines
+Content-Type: application/json
+
+{
+  "name": "Nature",
+  "issue": 650,
+  "publisher": "Springer Nature",
+  "category": "Science & Nature",
+  "publication_date": "2024-04-04"
+}
+
+### 4.7 GET the magazine created in 4.6
+GET {{baseUrl}}/magazines/4
+
+### 4.8 UPDATE a magazine (real PUT, JSON) -> 200 { "message": "Magazine updated successfully" }
+PUT {{baseUrl}}/magazines/4
+Content-Type: application/json
+
+{
+  "issue": 651
+}
+
+### 4.9 UPDATE a magazine via HTML form (POST + _method=PUT) -> 302 redirect to /magazines
+POST {{baseUrl}}/magazines/4?_method=PUT
+Content-Type: application/x-www-form-urlencoded
+
+name=Nature&issue=652&publisher=Springer+Nature&category=Science+%26+Nature&publication_date=2024-04-04
+
+### 4.10 UPDATE a magazine that does not exist -> 404
+PUT {{baseUrl}}/magazines/999
+Content-Type: application/json
+
+{
+  "issue": 1
+}
+
+### 4.11 DELETE a magazine (real DELETE) -> 200 { "message": "Magazine deleted successfully" }
+DELETE {{baseUrl}}/magazines/4
+
+### 4.12 DELETE a magazine that does not exist -> 404
+DELETE {{baseUrl}}/magazines/999
+
+
+### ---------------------------------------------------------------------
+### 5. LOGOUT
+### ---------------------------------------------------------------------
+
+### 5.1 Logout (JSON) -> clears access_token cookie
+POST {{baseUrl}}/logout
+
+### 5.2 After logout, a protected route is refused again -> 403
+GET {{baseUrl}}/books
+
+### 5.3 Logout via GET -> clears cookie and redirects to /
+GET {{baseUrl}}/logout
