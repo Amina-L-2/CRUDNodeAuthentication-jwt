@@ -13,12 +13,20 @@ router.get("/books",(req,res)=>{
     res.render("books", { books: data.books });
 })
 
+//endpoint to display new_book.ejs file
+router.get("/books/new", (req,res)=> {
+    console.log("newBookPg")
+    res.render("new_book")
+});
+
 router.get("/books/:id/edit", (req, res) => {
     const data = readData();
     const book = data.books.find(b => b.id === parseInt(req.params.id));
     if (!book) return res.status(404).send("Book not found");
     res.render("edit_books", { book });
 });
+
+
 
 //Creem un endpoint per obtenir un llibre per un id
 router.get("/books/:id",(req,res)=>{
@@ -42,8 +50,9 @@ router.post("/books",(req,res)=>{
     };
     data.books.push(newBook);
     writeData(data);
-    res.json(newBook);
+    res.redirect("/books");
 });
+
 
 
 //Creem un endpoint per modificar un llibre

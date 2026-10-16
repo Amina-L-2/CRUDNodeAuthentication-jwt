@@ -1,68 +1,54 @@
 {
-  "books": [
-    {
-      "id": 1,
-      "name": "Los 7 hábitos de la gente altamente efectiva",
-      "author": "Stephen R. Covey",
-      "year": 1989
-    },
-    {
-      "id": 2,
-      "name": "Padre rico, padre pobre",
-      "author": "Robert Kiyosaki",
-      "year": 1997
-    },
-    {
-      "id": 3,
-      "name": "1984",
-      "author": "George Orwell",
-      "year": 1949
-    },
-    {
-      "id": 4,
-      "name": "White Nights",
-      "author": "Fyodor Dostoevsky",
-      "year": 1848
-    },
-    {
-      "id": 5,
-      "name": "The Picture of Dorian Gray",
-      "author": "Oscar Wilde",
-      "year": 1890
-    }
-  ],
-  "magazines": [
-    {
-      "id": 1,
-      "name": "National Geographic",
-      "issue": 142,
-      "publisher": "National Geographic Partners",
-      "category": "Science & Nature",
-      "publication_date": "2024-01-01"
-    },
-    {
-      "id": 2,
-      "name": "Time",
-      "issue": 203,
-      "publisher": "Time USA, LLC",
-      "category": "News & Politics",
-      "publication_date": "2024-02-15"
-    },
-    {
-      "id": 3,
-      "name": "Wired",
-      "issue": 32,
-      "publisher": "Condé Nast",
-      "category": "Technology",
-      "publication_date": "2024-03-10"
-    },
-    {
-      "id": 4,
-      "name": "Vogue",
-      "issue": 812,
-      "publisher": "Condé Nast",
-      "category": "Fashion & Lifestyle",
-      "publication_date": "2024-04-01"
-    }
-  ]
+    "books": [
+        {
+            "id": 1,
+            "name": "Padre rico, padre pobre",
+            "author": "Robert Kiyosaki",
+            "year": 1999
+        },
+        {
+            "id": 2,
+            "name": "1984",
+            "author": "George Orwell",
+            "year": 1949
+        },
+        {
+            "id": 3,
+            "name": "White Nights",
+            "author": "Fyodor Dostoevsky",
+            "year": 1848
+        },
+        {
+            "id": 4,
+            "name": "The Picture of Dorian Gray",
+            "author": "Oscar Wilde",
+            "year": 1890
+        }
+    ],
+    "magazines": [
+        {
+            "id": 1,
+            "name": "National Geographic",
+            "issue": 142,
+            "publisher": "National Geographic Partners",
+            "category": "Science & Nature",
+            "publication_date": "2024-01-01"
+        },
+        {
+            "id": 2,
+            "name": "Time",
+            "issue": 203,
+            "publisher": "Time USA, LLC",
+            "category": "News & Politics",
+            "publication_date": "2024-02-15"
+        },
+        {
+            "id": 3,
+            "name": "Wired",
+            "issue": 32,
+            "publisher": "Condé Nast",
+            "category": "Technologi",
+            "publication_date": "2024-03-10"
+        }
+    ]
 }

@@ -14,6 +14,12 @@ router.get("/magazines",(req,res)=>{
     res.render("magazines", { magazines: data.magazines });
 })
 
+//endpoint to display new_magazine.ejs file
+router.get("/magazines/new", (req,res)=> {
+    console.log("newBookPg")
+    res.render("new_magazine")
+});
+
 //Pàgina per editar UNA revista
 router.get("/magazines/:id/edit", (req, res) => {
     const data = readData();
@@ -43,7 +49,7 @@ router.post("/magazines",(req,res)=>{
     if (newMagazine.issue !== undefined) newMagazine.issue = Number(newMagazine.issue);
     data.magazines.push(newMagazine);
     writeData(data);
-    res.json(newMagazine);
+    res.redirect("/magazines");
 });
 
 
