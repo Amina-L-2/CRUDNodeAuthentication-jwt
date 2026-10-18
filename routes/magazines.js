@@ -1,7 +1,11 @@
 import express from 'express';
 import fs from 'fs';
+import { pickFields, validateMagazine } from '../validators.js';
 
 const router = express.Router();
+
+// Fields a magazine is allowed to have (anything else sent by the client is ignored)
+const MAGAZINE_FIELDS = ['name', 'issue', 'publisher', 'category', 'publication_date'];
 
 // Same db.json as the books (it has a "magazines" list too)
 const readData = () => JSON.parse(fs.readFileSync('./db/db.json'));
@@ -16,7 +20,6 @@ router.get("/magazines",(req,res)=>{
 
 //endpoint to display new_magazine.ejs file
 router.get("/magazines/new", (req,res)=> {
-    console.log("newBookPg")
     res.render("new_magazine")
 });
 
@@ -41,12 +44,16 @@ router.get("/magazines/:id",(req,res)=>{
 //Creem un endpoint del tipus post per afegir una revista
 router.post("/magazines",(req,res)=>{
     const data=readData();
-    const body=req.body;
+    // New: validate the data before saving it. Errors are sent back as a 400.
+    const fields = pickFields(req.body, MAGAZINE_FIELDS);
+    const errors = validateMagazine(fields);
+    if (errors.length) return res.status(400).send(errors.join('; '));
+
     const newMagazine={
         id:Math.max(0, ...data.magazines.map(m => m.id)) + 1,
-        ...body,
+        ...fields,
+        issue: Number(fields.issue), // forms send text, we store a number
     };
-    if (newMagazine.issue !== undefined) newMagazine.issue = Number(newMagazine.issue);
     data.magazines.push(newMagazine);
     writeData(data);
     res.redirect("/magazines");
@@ -56,15 +63,17 @@ router.post("/magazines",(req,res)=>{
 //Creem un endpoint per modificar una revista
 router.put("/magazines/:id", (req, res) => {
     const data = readData();
-    const body = req.body;
     const id = parseInt(req.params.id);
     const magazineIndex = data.magazines.findIndex((magazine) => magazine.id === id);
     if (magazineIndex === -1) return res.status(404).send("Magazine not found");
-    if (body.issue !== undefined) body.issue = Number(body.issue); // el formulari envia text
-    data.magazines[magazineIndex] = {
-      ...data.magazines[magazineIndex],
-      ...body,
-    };
+
+    // New: the update is validated as the full magazine (old values + new values)
+    const fields = pickFields(req.body, MAGAZINE_FIELDS);
+    const merged = { ...data.magazines[magazineIndex], ...fields };
+    const errors = validateMagazine(merged);
+    if (errors.length) return res.status(400).send(errors.join('; '));
+
+    data.magazines[magazineIndex] = { ...merged, issue: Number(merged.issue) };
     writeData(data);
     // Form -> back to the list. Postman (real PUT) -> JSON.
     if (req.originalMethod === "POST") return res.redirect("/magazines");
@@ -72,7 +81,7 @@ router.put("/magazines/:id", (req, res) => {
 });
 
 
-//Creem un endpoint per eliminar una revista
+//Creem un endpoint per eliminar una revista (only admins, checked in server.js)
 router.delete("/magazines/:id", (req, res) => {
     const data = readData();
     const id = parseInt(req.params.id);

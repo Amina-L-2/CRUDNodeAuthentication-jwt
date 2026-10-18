@@ -1,7 +1,11 @@
 import express from 'express';
 import fs from 'fs';
+import { pickFields, validateBook } from '../validators.js';
 
 const router = express.Router();
+
+// Fields a book is allowed to have (anything else sent by the client is ignored)
+const BOOK_FIELDS = ['name', 'author', 'year'];
 
 const readData = () => JSON.parse(fs.readFileSync('./db/db.json'));
 const writeData = (data) => fs.writeFileSync('./db/db.json', JSON.stringify(data));
@@ -15,7 +19,6 @@ router.get("/books",(req,res)=>{
 
 //endpoint to display new_book.ejs file
 router.get("/books/new", (req,res)=> {
-    console.log("newBookPg")
     res.render("new_book")
 });
 
@@ -42,11 +45,15 @@ router.get("/books/:id",(req,res)=>{
 //Creem un endpoint del tipus post per afegir un llibre
 router.post("/books",(req,res)=>{
     const data=readData();
-    const body=req.body;
-    //todo lo que viene en ...body se agrega al nuevo libro
+    // New: validate the data before saving it. Errors are sent back as a 400.
+    const fields = pickFields(req.body, BOOK_FIELDS);
+    const errors = validateBook(fields);
+    if (errors.length) return res.status(400).send(errors.join('; '));
+
     const newBook={
         id:Math.max(0, ...data.books.map(b => b.id)) + 1,
-        ...body,
+        ...fields,
+        year: Number(fields.year), // forms send text, we store a number
     };
     data.books.push(newBook);
     writeData(data);
@@ -58,15 +65,17 @@ router.post("/books",(req,res)=>{
 //Creem un endpoint per modificar un llibre
 router.put("/books/:id", (req, res) => {
     const data = readData();
-    const body = req.body;
     const id = parseInt(req.params.id);
     const bookIndex = data.books.findIndex((book) => book.id === id);
     if (bookIndex === -1) return res.status(404).send("Book not found");
-    if (body.year !== undefined) body.year = Number(body.year); // el formulari envia text
-    data.books[bookIndex] = {
-      ...data.books[bookIndex],
-      ...body,
-    };
+
+    // New: the update is validated as the full book (old values + new values)
+    const fields = pickFields(req.body, BOOK_FIELDS);
+    const merged = { ...data.books[bookIndex], ...fields };
+    const errors = validateBook(merged);
+    if (errors.length) return res.status(400).send(errors.join('; '));
+
+    data.books[bookIndex] = { ...merged, year: Number(merged.year) };
     writeData(data);
     // A form arrives as POST (method-override turns it into PUT) -> go back to the list.
     // Postman sends a real PUT -> JSON. Only ONE response is allowed per request.
@@ -75,7 +84,7 @@ router.put("/books/:id", (req, res) => {
 });
 
 
-//Creem un endpoint per eliminar un llibre
+//Creem un endpoint per eliminar un llibre (only admins, checked in server.js)
 router.delete("/books/:id", (req, res) => {
     const data = readData();
     const id = parseInt(req.params.id);

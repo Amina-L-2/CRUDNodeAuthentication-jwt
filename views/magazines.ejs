@@ -31,10 +31,12 @@
                     <div class="actions">
                         <a class="btn btn-small" href="/magazines/<%= magazine.id %>/edit">Editar</a>
 
+                        <% if (user && user.role === 'admin') { %>
                         <form action="/magazines/<%= magazine.id %>?_method=DELETE" method="POST"
                               onsubmit="return confirm('¿Seguro que quieres eliminar esta revista?')">
                             <button type="submit" class="btn-small">Eliminar</button>
                         </form>
+                        <% } %>
                     </div>
                 </li>
             <% }) %>

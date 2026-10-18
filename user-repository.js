@@ -33,7 +33,8 @@ export class UserRepository{
         User.create({
             _id:id,
             username,
-            password:hashedPassword
+            password:hashedPassword,
+            role:'user' // every new account is a normal user
         }).save()
         return id
     }

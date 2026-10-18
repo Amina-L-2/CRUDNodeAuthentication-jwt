@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css" />
+    <title>Profile</title>
+</head>
+<body>
+    <div class="page">
+        <h1>Profile</h1>
+        <!-- user comes from the JWT: { id, username, role } -->
+        <p><strong>Username:</strong> <%= user.username %></p>
+        <p><strong>Role:</strong> <%= user.role || 'user' %></p>
+        <a class="back" href="/protected">Back</a>
+    </div>
+</body>
+</html>

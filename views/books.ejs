@@ -34,6 +34,7 @@
                                 Editar
                             </a>
 
+                            <% if (user && user.role === 'admin') { %>
                             <form
                                 action="/books/<%= book.id %>?_method=DELETE"
                                 method="POST"
@@ -43,6 +44,7 @@
                                     Eliminar
                                 </button>
                             </form>
+                            <% } %>
                         </div>
                     </li>
                 <% }) %>

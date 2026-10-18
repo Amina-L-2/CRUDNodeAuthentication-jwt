@@ -28,6 +28,7 @@ app.use((req,res,next) => {
     } catch(error){
         req.session.user = null
     }
+    res.locals.user = req.session.user // disponible en todas las plantillas EJS
     next() // seguir a la siguiente ruta o middleware.
 })
 
@@ -35,6 +36,13 @@ app.use((req,res,next) => {
 // (the routers go AFTER the middleware above, so req.session.user is already loaded)
 app.use(['/books', '/magazines'], (req, res, next) => {
     if (!req.session.user) return res.status(403).send("Access not authorized")
+    // Business rules:
+    //  - any logged-in user can list, create and edit
+    //  - only admins can delete
+    // (the HTML forms send POST + _method=DELETE; methodOverride has already turned it into DELETE here)
+    if (req.method === 'DELETE' && req.session.user.role !== 'admin') {
+        return res.status(403).send("Only admins can delete")
+    }
     next()
 })
 app.use(booksRouter);
@@ -43,11 +51,11 @@ app.use(magazinesRouter);
 app.post('/register', async (req,res)=>{
     //aqui el body es el cuerpo de la petición
     const {username,password}=req.body
-    console.log(req.body)
     try{
         const id= await UserRepository.create({username,password});
         // log the new user in right away, because register.js sends them to /protected
-        const token = jwt.sign({id, username}, SECRET_JWT_KEY, {expiresIn:'1h'})
+        // new accounts are always normal users; admins are set manually in db/User.json
+        const token = jwt.sign({id, username, role:'user'}, SECRET_JWT_KEY, {expiresIn:'1h'})
         res.cookie('access_token',token,{
             httpOnly:true,
             secure: process.env.NODE_ENV==='production',
@@ -68,7 +76,7 @@ app.post('/login', async (req,res)=>{
         const user = await UserRepository.login({username,password})
         console.log("llego aqui 1")
         const token = jwt.sign(
-            {id: user._id, username: user.username},
+            {id: user._id, username: user.username, role: user.role || 'user'},
             SECRET_JWT_KEY, 
             {
             expiresIn:'1h'
@@ -98,7 +106,7 @@ app.post('/logout',(req,res)=>{
 
 //To make the endpoints of /login and /logout work in URL
 app.get('/login', (req, res) => {
-    res.render("register");
+    res.render("login");
 });
 app.get('/logout', (req, res) => {
     res.clearCookie('access_token').redirect('/');
@@ -111,10 +119,17 @@ app.get('/protected',(req,res) => {
 
 })
 
+// Profile page: shows the data of the logged-in user (read from the token)
+app.get('/profile', (req, res) => {
+    const {user} = req.session;
+    if (!user) return res.status(403).send("Access not authorized")
+    res.render("profile", {user})
+})
+
 app.get('/',(req,res) => {
     //const {user} = req.session;
     const username = "" 
-    res.render("register", username)
+    res.render("login", username)
 })
 
 
